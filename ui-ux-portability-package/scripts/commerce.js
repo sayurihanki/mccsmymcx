@@ -520,19 +520,37 @@ export async function fetchPlaceholders(path) {
       }
 
       // Create new fetch promise
-      const resourceFetchPromise = fetch(`${url}?sheet=data`).then(async (response) => {
-        if (response.ok) {
-          const data = await response.json();
-          // Cache the response
-          window.placeholders[resourceCacheKey] = data;
-          return data;
+      const resourceFetchPromise = (async () => {
+        const candidates = [`${url}?sheet=data`, url];
+        let lastError = null;
+
+        for (let i = 0; i < candidates.length; i += 1) {
+          const candidate = candidates[i];
+          try {
+            // eslint-disable-next-line no-await-in-loop
+            const response = await fetch(candidate);
+            if (!response.ok) {
+              lastError = `HTTP ${response.status} ${response.statusText}`.trim();
+              continue;
+            }
+
+            // eslint-disable-next-line no-await-in-loop
+            const data = await response.json();
+            // Cache the response
+            window.placeholders[resourceCacheKey] = data;
+            return data;
+          } catch (error) {
+            lastError = error;
+          }
         }
-        console.warn(`Failed to fetch placeholders from ${url}: HTTP ${response.status} ${response.statusText}`);
+
+        if (lastError instanceof Error) {
+          console.error(`Error fetching placeholders from ${url}:`, lastError);
+        } else {
+          console.warn(`Failed to fetch placeholders from ${url}: ${lastError || 'Unknown error'}`);
+        }
         return {};
-      }).catch((error) => {
-        console.error(`Error fetching placeholders from ${url}:`, error);
-        return {};
-      }).finally(() => {
+      })().finally(() => {
         // Remove from pending
         delete window.placeholders._pending[resourceCacheKey];
       });
