@@ -9,6 +9,7 @@ import { decorateMain } from '../../scripts/scripts.js';
 import {
   loadSections,
 } from '../../scripts/aem.js';
+import { getFragmentFetchCandidates } from '../../scripts/fragment-utils.js';
 
 /**
  * Loads a fragment.
@@ -17,12 +18,38 @@ import {
  */
 export async function loadFragment(path) {
   if (path && path.startsWith('/')) {
-    const root = getRootPath().replace(/\/$/, '');
-    const url = `${root}${path}.plain.html`;
-    const resp = await fetch(url);
-    if (resp.ok) {
+    const candidates = getFragmentFetchCandidates(path, {
+      rootPath: getRootPath(),
+      codeBasePath: window.hlx?.codeBasePath || '',
+    });
+    let html = '';
+    let resolved = '';
+
+    for (let i = 0; i < candidates.length; i += 1) {
+      const url = candidates[i];
+      try {
+        // eslint-disable-next-line no-await-in-loop
+        const resp = await fetch(url);
+        if (!resp.ok) {
+          continue;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        html = await resp.text();
+        resolved = url;
+        if (i > 0) {
+          // eslint-disable-next-line no-console
+          console.warn(`Using fallback fragment content for ${path}`, { url });
+        }
+        break;
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.warn(`Failed to fetch fragment candidate for ${path}`, { url, error });
+      }
+    }
+
+    if (html) {
       const main = document.createElement('main');
-      main.innerHTML = await resp.text();
+      main.innerHTML = html;
 
       // reset base path for media to fragment base
       const resetAttributeBase = (tag, attr) => {
@@ -37,6 +64,9 @@ export async function loadFragment(path) {
       await loadSections(main);
       return main;
     }
+
+    // eslint-disable-next-line no-console
+    console.warn(`Fragment content not found for ${path}`, { candidates, resolved });
   }
   return null;
 }

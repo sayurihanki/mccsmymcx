@@ -5,6 +5,11 @@ import { CUSTOMER_ORDERS_PATH, rootLink } from '../../scripts/commerce.js';
 
 export default async function decorate(block) {
   const fragment = await loadFragment('/customer/sidebar-fragment');
+  if (!fragment) {
+    // eslint-disable-next-line no-console
+    console.warn('Account sidebar fragment unavailable: /customer/sidebar-fragment');
+    return;
+  }
   const sidebarItemsConfig = fragment.querySelectorAll('.default-content-wrapper > ol > li');
   const sidebarItems = Array.from(sidebarItemsConfig).map((item) => {
     const itemParams = Array.from(item.querySelectorAll('ol > li'));

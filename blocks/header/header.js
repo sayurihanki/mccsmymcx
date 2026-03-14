@@ -404,6 +404,11 @@ export default async function decorate(block) {
   const navMeta = getMetadata('nav');
   const navPath = navMeta ? new URL(navMeta, window.location).pathname : '/nav';
   const fragment = await loadFragment(navPath);
+  if (!fragment) {
+    // eslint-disable-next-line no-console
+    console.warn(`Header navigation fragment unavailable: ${navPath}`);
+    return;
+  }
 
   // decorate nav DOM
   block.textContent = '';
@@ -616,6 +621,11 @@ export default async function decorate(block) {
       const miniCartMeta = getMetadata('mini-cart');
       const miniCartPath = miniCartMeta ? new URL(miniCartMeta, window.location).pathname : '/mini-cart';
       const miniCartFragment = await loadFragment(miniCartPath);
+      if (!miniCartFragment?.firstElementChild) {
+        // eslint-disable-next-line no-console
+        console.warn(`Mini-cart fragment unavailable: ${miniCartPath}`);
+        return;
+      }
       minicartPanel.append(miniCartFragment.firstElementChild);
     });
   }
