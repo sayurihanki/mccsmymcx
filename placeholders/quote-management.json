@@ -1,0 +1,1 @@
+{"total":2,"offset":0,"limit":2,"data":[{"Key":"NegotiableQuote.Request.Button.label","Value":"Request a Quote"},{"Key":"NegotiableQuote.Request.Button.insufficientTotalMessage","Value":"Minimum cart subtotal of {count} is required to request a quote"}],":type":"sheet"}
