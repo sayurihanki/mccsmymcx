@@ -521,7 +521,7 @@ export async function fetchPlaceholders(path) {
 
       // Create new fetch promise
       const resourceFetchPromise = (async () => {
-        const candidates = [`${url}?sheet=data`, url];
+        const candidates = [url, `${url}?sheet=data`];
         let lastError = null;
 
         for (let i = 0; i < candidates.length; i += 1) {
