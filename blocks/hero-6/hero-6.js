@@ -18,6 +18,10 @@
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const XLINK_NS = 'http://www.w3.org/1999/xlink';
+const CTA_FALLBACKS = {
+  'get started': '/customer/create',
+  'learn more': '/support',
+};
 
 /** Small HTML element factory. */
 function el(tag, cls = '', attrs = {}, children = []) {
@@ -50,6 +54,39 @@ function rowParts(block, idx) {
 /** Read the first anchor element from a block row. */
 function rowAnchor(block, idx) {
   return block.children[idx]?.querySelector('a') ?? null;
+}
+
+function sanitizeUrl(url) {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('//')) return '';
+  if (['#', '/', './', '../', '?'].some((token) => trimmed.startsWith(token))) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol) ? trimmed : '';
+  } catch {
+    return '';
+  }
+}
+
+function normalizeCtaAnchor(anchor) {
+  if (!anchor) return null;
+
+  const safeHref = sanitizeUrl(anchor.getAttribute('href') || '');
+  if (safeHref) {
+    anchor.href = safeHref;
+    return anchor;
+  }
+
+  const fallbackHref = CTA_FALLBACKS[anchor.textContent.trim().toLowerCase()];
+  if (fallbackHref) {
+    anchor.href = fallbackHref;
+    return anchor;
+  }
+
+  return null;
 }
 
 /**
@@ -354,8 +391,8 @@ export default function decorate(block) {
   const eyebrow = rowText(block, 0);
   const titleSource = block.children[1]?.querySelector('div') ?? null;
   const subtitle = rowText(block, 2);
-  const ctaPrimary = rowAnchor(block, 3);
-  const ctaSecondary = rowAnchor(block, 4);
+  const ctaPrimary = normalizeCtaAnchor(rowAnchor(block, 3));
+  const ctaSecondary = normalizeCtaAnchor(rowAnchor(block, 4));
   const stats = [5, 6, 7].map((i) => rowParts(block, i));
   const features = [8, 9, 10].map((i) => rowParts(block, i));
 

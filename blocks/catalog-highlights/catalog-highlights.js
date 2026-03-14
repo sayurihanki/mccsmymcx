@@ -28,6 +28,21 @@ function cellText(cell) {
   return cell.innerText.trim();
 }
 
+function sanitizeUrl(url) {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('//')) return '';
+  if (['#', '/', './', '../', '?'].some((token) => trimmed.startsWith(token))) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol) ? trimmed : '';
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Read link data from an authored cell.
  * If the cell has plain URL text, it is treated as href + text.
@@ -39,8 +54,10 @@ function readLink(cell) {
 
   const anchor = cell.querySelector('a[href]');
   if (anchor) {
+    const sanitizedHref = sanitizeUrl(anchor.getAttribute('href') || '');
+    const fallbackHref = /browse/i.test(anchor.textContent) ? '/products/default' : '';
     return {
-      href: anchor.getAttribute('href') || '',
+      href: sanitizedHref || fallbackHref,
       text: anchor.textContent.trim() || anchor.getAttribute('href') || '',
       target: anchor.getAttribute('target') || '',
       rel: anchor.getAttribute('rel') || '',
@@ -50,9 +67,10 @@ function readLink(cell) {
   const text = cellText(cell);
   if (!text) return null;
 
-  if (/^(https?:\/\/|\/)/i.test(text)) {
+  const sanitizedHref = sanitizeUrl(text);
+  if (sanitizedHref) {
     return {
-      href: text,
+      href: sanitizedHref,
       text,
       target: '',
       rel: '',

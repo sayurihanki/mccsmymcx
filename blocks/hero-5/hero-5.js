@@ -42,6 +42,26 @@ function rowParts(block, rowIndex) {
   return rowText(block, rowIndex).split('|').map((part) => part.trim());
 }
 
+const CTA_FALLBACKS = {
+  'access your portal': '/customer/login',
+  'watch demo': '/support',
+};
+
+function sanitizeUrl(url) {
+  if (!url) return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  if (trimmed.startsWith('//')) return '';
+  if (['#', '/', './', '../', '?'].some((token) => trimmed.startsWith(token))) return trimmed;
+
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    return ['http:', 'https:', 'mailto:', 'tel:'].includes(parsed.protocol) ? trimmed : '';
+  } catch {
+    return '';
+  }
+}
+
 /**
  * Build sparkline SVG used inside the dashboard card.
  * @param {string} gradientId
@@ -115,6 +135,11 @@ function buildSparkline(gradientId) {
  */
 function decorateCta(anchor, className, iconMarkup) {
   if (!anchor) return null;
+  const safeHref = sanitizeUrl(anchor.getAttribute('href') || '');
+  const fallbackHref = CTA_FALLBACKS[anchor.textContent.trim().toLowerCase()] || '';
+  if (!safeHref && !fallbackHref) return null;
+
+  anchor.href = safeHref || fallbackHref;
   anchor.className = className;
   if (!anchor.querySelector('svg')) {
     anchor.insertAdjacentHTML('beforeend', iconMarkup);
