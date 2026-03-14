@@ -1,0 +1,7 @@
+mountpoints:
+  /:
+    url: https://content.da.live/sayurihanki/mccsmymcx/
+    type: markup
+
+folders:
+  /products/: /products/default
