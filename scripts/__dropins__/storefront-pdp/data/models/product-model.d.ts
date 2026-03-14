@@ -15,6 +15,7 @@ export interface ProductModel {
     prices: Prices;
     attributes?: Attribute[];
     options?: Option[];
+    inputOptions?: InputOption[];
     optionUIDs?: string[];
     url?: string;
     urlKey?: string;
@@ -55,6 +56,24 @@ export interface Option {
     multiple: boolean;
     items: OptionValue[];
 }
+export interface InputOption {
+    id: string;
+    title: string;
+    label: string;
+    required: boolean;
+    type: string;
+    suffix?: string;
+    sortOrder?: number;
+    range?: {
+        from?: number;
+        to?: number;
+    } | null;
+    imageSize?: {
+        width?: number;
+        height?: number;
+    } | null;
+    fileExtensions?: string;
+}
 interface OptionValue {
     id: string;
     label: string;
@@ -67,7 +86,6 @@ interface Attribute {
     id: string;
     label: string;
     value: string;
-    roles?: string[];
 }
 export {};
 //# sourceMappingURL=product-model.d.ts.map
