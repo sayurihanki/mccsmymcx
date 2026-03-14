@@ -12,7 +12,7 @@ test('getFragmentFetchCandidates returns mounted content first and repo fallback
 
   assert.deepEqual(candidates, [
     '/root-path/nav.plain.html',
-    '/code-base/fallback-content/nav.plain.html',
+    '/code-base/fallback-content/nav.html',
   ]);
 });
 
@@ -24,7 +24,7 @@ test('getFragmentFetchCandidates preserves nested fragment paths', () => {
 
   assert.deepEqual(candidates, [
     '/customer/sidebar-fragment.plain.html',
-    '/fallback-content/customer/sidebar-fragment.plain.html',
+    '/fallback-content/customer/sidebar-fragment.html',
   ]);
 });
 

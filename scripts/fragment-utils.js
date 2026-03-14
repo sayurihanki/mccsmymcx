@@ -10,7 +10,7 @@ export function getFragmentFetchCandidates(path, options = {}) {
   const rootPath = trimTrailingSlash(options.rootPath || '');
   const codeBasePath = trimTrailingSlash(options.codeBasePath || '');
   const primary = `${rootPath}${path}.plain.html`;
-  const fallback = `${codeBasePath}/fallback-content${path}.plain.html`;
+  const fallback = `${codeBasePath}/fallback-content${path}.html`;
 
   return primary === fallback ? [primary] : [primary, fallback];
 }
